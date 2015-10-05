@@ -28,6 +28,17 @@ void cleanLine(char *lineBuf) {
 }
 
 /*
+ * Count Digits
+ */
+int countDigits(int num) {
+    int count = 1;
+    while (num /= 10) {
+       count++; 
+    }
+    return count;
+}
+
+/*
  * Checks if a specific string is empty
  */
 bool isEmptyStr(const char *str) {
@@ -45,13 +56,13 @@ bool isEmptyStr(const char *str) {
  * Creates a line number with a series of spaces
  */
 char *createLineNumberStr(char *line, int lineNum, int numLines) {
-    size_t counter = 0;                                                 // Counter for the loop
+    int counter = 0;                                                 // Counter for the loop
     char *lineNumStr = (char *)malloc(sizeof(char) * 100);              // New string to hold the line num + the string
     sprintf(lineNumStr, "%d", lineNum);                                 // Allocate a new string
     
-    size_t numLen = strlen(lineNumStr) / numLines;                      // Get how long the maximum line number should be
+    size_t numLen = countDigits(numLines);                                 // Get how long the line number should be
     /* Create the spaces to be added after the line number */
-    for (counter = 0; counter < numLen+1; counter++) {
+    for (counter = 1; strlen(lineNumStr) < numLen+1; counter++) {
         // Add a space at the end
         strcat(lineNumStr, " ");
     }
@@ -86,6 +97,7 @@ void addLineNumbers(char *lines[], int numLines, bool squeeze) {
             // If the string isn't empty, create the line number string as normal and change the string at index
             if (!isEmptyStr(lines[index])) {
                 processLineNumber(lines[index], index+1, numLines);
+                lastLineBlank = false;
             } 
             else { // If the string is empty, check if the last one was as well, if it was, restart the loop
                 if (lastLineBlank)
@@ -141,8 +153,10 @@ void printLines(char **lines, int numLines, bool squeeze) {
                 }
             }
             // If its not empty, print it
-            else
+            else {
                 printf("%s\n", lines[index]);
+                lastLineBlank = false;
+            }
         } 
         // If we're not squeezing, don't worry about the above
         else {
@@ -183,12 +197,12 @@ void printFile(FILE *file, struct Arguments args) {
 
     // Free anything dynamically allocated 
     // Free all of the strings
-    for (int index = 0; index < 1024; index++)
+    for (int index = 0; index < lineNum-1; index++)
     {
         if (lines[index] != NULL)
             free(lines[index]);
     }
-    //free(lines);
+    free(lines);
 }
 
 int main(int argc, const char **argv) {
