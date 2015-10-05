@@ -23,7 +23,7 @@ struct Arguments {
 void cleanLine(char *lineBuf) {
     // Remove the \n from the lineBuf
     size_t length = strlen(lineBuf);
-    if (lineBuf[length - 1] == '\n') 
+    if (lineBuf[length - 1] == '\n' || lineBuf[length - 1] == '\r') 
         lineBuf[length - 1] = '\0';
 }
 
@@ -57,10 +57,10 @@ bool isEmptyStr(const char *str) {
  */
 char *createLineNumberStr(char *line, int lineNum, int numLines) {
     int counter = 0;                                                 // Counter for the loop
-    char *lineNumStr = (char *)malloc(sizeof(char) * 100);              // New string to hold the line num + the string
-    sprintf(lineNumStr, "%d", lineNum);                                 // Allocate a new string
+    char *lineNumStr = (char *)malloc(sizeof(char) * 100);           // New string to hold the line num + the string
+    sprintf(lineNumStr, "%d", lineNum);                              // Allocate a new string
     
-    size_t numLen = countDigits(numLines);                                 // Get how long the line number should be
+    size_t numLen = countDigits(numLines);                           // Get how long the line number should be
     /* Create the spaces to be added after the line number */
     for (counter = 1; strlen(lineNumStr) < numLen+1; counter++) {
         // Add a space at the end
@@ -125,6 +125,8 @@ void addDollarSign(char *lines[], int numLines) {
 
     // Loop through each string in the list and append a $ to the end of each one
     for (index = 0; index < numLines - 1; index++) {
+        // Clean the line of \n and \r
+        cleanLine(lines[index]);
         // Add the $ to the end of each string and insert it back into the array
         lines[index] = strcat(lines[index], "$");
     }
