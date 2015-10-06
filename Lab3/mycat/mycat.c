@@ -4,10 +4,15 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+
+/* Constants */
+#define BUFF_SIZE 512
 
 /* Structs */
 struct Arguments {
@@ -23,17 +28,17 @@ struct Arguments {
 void cleanLine(char *lineBuf) {
     // Remove the \n from the lineBuf
     size_t length = strlen(lineBuf);
-    if (lineBuf[length - 1] == '\n' || lineBuf[length - 1] == '\r') 
+    if (lineBuf[length - 1] == '\n' || lineBuf[length - 1] == '\r')
         lineBuf[length - 1] = '\0';
 }
 
 /*
- * Count Digits
+ * Count Digits in a number
  */
 int countDigits(int num) {
     int count = 1;
     while (num /= 10) {
-       count++; 
+        count++;
     }
     return count;
 }
@@ -57,7 +62,7 @@ bool isEmptyStr(const char *str) {
  */
 char *createLineNumberStr(char *line, int lineNum, int numLines) {
     int counter = 0;                                                 // Counter for the loop
-    char *lineNumStr = (char *)malloc(sizeof(char) * 100);           // New string to hold the line num + the string
+    char *lineNumStr = (char *)malloc(sizeof(char) * BUFF_SIZE);           // New string to hold the line num + the string
     sprintf(lineNumStr, "%d", lineNum);                              // Allocate a new string
     
     size_t numLen = countDigits(numLines);                           // Get how long the line number should be
@@ -66,7 +71,7 @@ char *createLineNumberStr(char *line, int lineNum, int numLines) {
         // Add a space at the end
         strcat(lineNumStr, " ");
     }
-
+    
     // Add the line to the end of the line number and return it
     strcat(lineNumStr, line);
     return lineNumStr;
@@ -77,7 +82,7 @@ char *createLineNumberStr(char *line, int lineNum, int numLines) {
  */
 void processLineNumber(char *line, int lineNum, int numLines) {
     // Create a line number string
-    char *newStr = createLineNumberStr(line, lineNum, numLines); 
+    char *newStr = createLineNumberStr(line, lineNum, numLines);
     // Copy that new string into the array to replace the one currently in that spot
     strcpy(line, newStr);
 }
@@ -89,7 +94,7 @@ void processLineNumber(char *line, int lineNum, int numLines) {
 void addLineNumbers(char *lines[], int numLines, bool squeeze) {
     int index = 0;                                                      // Array indexer
     bool lastLineBlank = false;                                         // Flag that is set when the last line is blank
-
+    
     // Loop through each string in the array and add a line number
     for (index = 0; index < numLines-1; index++) {
         // Check if we're squeezing the output
@@ -98,17 +103,17 @@ void addLineNumbers(char *lines[], int numLines, bool squeeze) {
             if (!isEmptyStr(lines[index])) {
                 processLineNumber(lines[index], index+1, numLines);
                 lastLineBlank = false;
-            } 
+            }
             else { // If the string is empty, check if the last one was as well, if it was, restart the loop
                 if (lastLineBlank)
                     continue;
                 // Otherwise, create a line number string as usual
-                else { 
-                    processLineNumber(lines[index], index+1, numLines); 
+                else {
+                    processLineNumber(lines[index], index+1, numLines);
                     lastLineBlank = true;
                 }
             }
-        } 
+        }
         // If we're not squeezing, don't worry about the above
         else {
             processLineNumber(lines[index], index+1, numLines);
@@ -122,7 +127,7 @@ void addLineNumbers(char *lines[], int numLines, bool squeeze) {
 void addDollarSign(char *lines[], int numLines) {
     // Start a counter/index
     int index = 0;
-
+    
     // Loop through each string in the list and append a $ to the end of each one
     for (index = 0; index < numLines - 1; index++) {
         // Clean the line of \n and \r
@@ -137,10 +142,10 @@ void addDollarSign(char *lines[], int numLines) {
  */
 void printLines(char **lines, int numLines, bool squeeze) {
     bool lastLineBlank = false;                                     // Flag for if the last line was blank
-                                                                    // if it was, then any blank line after
-                                                                    // must not be printed
+    // if it was, then any blank line after
+    // must not be printed
     for (int index = 0; index < numLines-1; index++) {
-        if (squeeze) 
+        if (squeeze)
         {
             // If the string is empty
             if (isEmptyStr(lines[index]))
@@ -149,57 +154,94 @@ void printLines(char **lines, int numLines, bool squeeze) {
                 if (lastLineBlank)
                     continue;
                 // Otherwise, print the line like normal
-                else {
-                    printf("%s\n", lines[index]);
-                    lastLineBlank = true;
-                }
+                else 
+                    lastLineBlank = true; 
             }
             // If its not empty, print it
-            else {
-                printf("%s\n", lines[index]);
+            else 
                 lastLineBlank = false;
-            }
-        } 
+
+            printf("%s\n", lines[index]);
+        }
         // If we're not squeezing, don't worry about the above
         else {
+            cleanLine(lines[index]);
             printf("%s\n", lines[index]);
         }
     }
 }
 
-void printFile(FILE *file, struct Arguments args) {
+void printFile(int file, struct Arguments args) {
     const int fileLength = 1024;                                    // Hold the 1024 lines the file can have
-    const int lineLength = 128;                                     // Hold the length of each line
+    size_t lineLength = BUFF_SIZE;                                  // Hold the length of each line
     char *lineBuf = (char *)malloc(sizeof(char) * lineLength);      // Buffer to hold the line read in
+    char *workingStr = (char *)malloc(sizeof(char) * lineLength);   // Buffer to hold overflow from line processing
     char **lines = (char **)malloc(sizeof(char *) * fileLength);    // Array for all of the lines
-    int lineNum = 1;                                                // Counts the number of lines in the file
-
+    int workingIndex = 0;                                           // Counts the number of lines in the file
+    int linesIndex = 0;                                             // Current place in the lines[] array
+    bool lastCharNewLine = false;                                   // Signifies if the last line was \n
+    
     /* Loop through each line in the file and store them in an array */
-    while (fgets(lineBuf, lineLength, file)) {
-        /* Print line */
-        // Remove the \n from the line
-        cleanLine(lineBuf);
-        // Allocate memory for the string
-        lines[lineNum - 1] = (char *)malloc(lineLength * sizeof(char *));
-        // Copy the lineBuf to the array
-        strcpy(lines[lineNum-1], lineBuf);
-        // Incremement the line counter
-        lineNum++;
+    while (read(file, lineBuf, sizeof(char))) {
+        // Read 1 char at a time
+        if (lineBuf[0] != '\n' && lineBuf[0] != '\r') {
+            workingStr[workingIndex] = lineBuf[0];
+            workingIndex++;
+        }
+        else if (lastCharNewLine) {
+            // If the next char read in is \r, skip this char
+            if (lineBuf[0] == '\r') {
+                lastCharNewLine = false;
+                continue;
+            }
+            else {
+                if (lineBuf[0] == '\n')
+                {
+                    lastCharNewLine = true;
+                    continue;
+                }
+                else
+                {
+                    lastCharNewLine = false;
+                    continue;
+                }
+                //workingStr[workingIndex] = lineBuf[0];
+                //workingIndex++;
+            }
+        }
+        else {
+            // We've got a new line character, save the working str to our lines
+            lines[linesIndex] = (char *)malloc(sizeof(char) * lineLength);
+            strcpy(lines[linesIndex], workingStr);
+            
+            // Increment to the next line, set working index back to 0
+            linesIndex++;
+            workingIndex = 0;
+            
+            // Reallocate the working string
+            memset(workingStr, 0, strlen(workingStr));
+            
+            // Signify the last char was a new line (therefor if there is a \r next time, we will skip it
+            lastCharNewLine = true;
+        }
     }
+    // Free memory allocated for loop
+    free(lineBuf);
+    free(workingStr);
 
     // Check the args for line numbering flag, if true, add the line numbers
     if (args.lineNumbers == true)
-        addLineNumbers(lines, lineNum, args.squeeze);
+        addLineNumbers(lines, linesIndex+1, args.squeeze);
     // Check the args for the non printing character flag, if true, append the $
-    if (args.nonPrint == true)   
-        addDollarSign(lines, lineNum); 
-
+    if (args.nonPrint == true)
+        addDollarSign(lines, linesIndex+1);
+    
     // Print the lines after they've been proccessed
-    printLines(lines, lineNum, args.squeeze);
-
-    // Free anything dynamically allocated 
+    printLines(lines, linesIndex+1, args.squeeze);
+    
+    // Free anything dynamically allocated
     // Free all of the strings
-    for (int index = 0; index < lineNum-1; index++)
+    for (int index = 0; index < linesIndex-1; index++)
     {
         if (lines[index] != NULL)
             free(lines[index]);
@@ -209,9 +251,9 @@ void printFile(FILE *file, struct Arguments args) {
 
 int main(int argc, const char **argv) {
     int fileIndex = 1;
-    int numFiles = argc - 1; 
-    struct Arguments args = {false, false, false}; 
-    FILE **files = (FILE **)malloc(numFiles * sizeof(FILE *));
+    int numFiles = argc - 1;
+    struct Arguments args = {false, false, false};
+    int *files = (int *)malloc(numFiles * sizeof(int));
     
     // Check for command arguments (ie; -ens)
     if (strstr(argv[1], "-"))
@@ -219,10 +261,10 @@ int main(int argc, const char **argv) {
         // We have command args, so set fileIndex to 2 so that we scan after the arguments
         fileIndex = 2;
         numFiles = argc - 2;
-
+        
         if (strstr(argv[1], "e")) {
             args.nonPrint = true;
-        } 
+        }
         if (strstr(argv[1], "n")) {
             args.lineNumbers = true;
         }
@@ -230,15 +272,18 @@ int main(int argc, const char **argv) {
             args.squeeze = true;
         }
     }
-
+    
     for (int index = fileIndex; index < argc; index++) {
         /* Loop through each file and create an array of all of them */
-        FILE *newFile = fopen(argv[index], "r");
+        int newFile = open(argv[index], O_RDONLY);
         files[index - fileIndex] = newFile;
     }
-
+    
     for (int index = 0; index <= numFiles-1; index++) {
         /* Loop through each file in the array and print it */
         printFile(files[index], args);
     }
+
+    // Free files to release memory back
+    free(files);
 }
