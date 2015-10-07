@@ -254,7 +254,13 @@ int main(int argc, const char **argv) {
     int numFiles = argc - 1;
     struct Arguments args = {false, false, false};
     int *files = (int *)malloc(numFiles * sizeof(int));
-    
+   
+    if (argc <= 1) {
+        printf("Please supply parameters\n");
+        free(files);
+        return 1;
+    }
+
     // Check for command arguments (ie; -ens)
     if (strstr(argv[1], "-"))
     {
