@@ -8,17 +8,17 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 /* Constants */
 #define BUFF_SIZE 512
-
+#define true 1
+#define false 0
 /* Structs */
 struct Arguments {
-    bool nonPrint;
-    bool lineNumbers;
-    bool squeeze;
+    int nonPrint;
+    int lineNumbers;
+    int squeeze;
 };
 
 
@@ -46,7 +46,7 @@ int countDigits(int num) {
 /*
  * Checks if a specific string is empty
  */
-bool isEmptyStr(const char *str) {
+int isEmptyStr(const char *str) {
     // Loop through every character in the string
     while (*str != '\0') {
         // If the character isn't a space, $ or a number, return false
@@ -91,9 +91,9 @@ void processLineNumber(char *line, int lineNum, int numLines) {
  * Adds the line number plus a series of spaces depending on how
  * many lines there are to an array of lines
  */
-void addLineNumbers(char *lines[], int numLines, bool squeeze) {
+void addLineNumbers(char *lines[], int numLines, int squeeze) {
     int index = 0;                                                      // Array indexer
-    bool lastLineBlank = false;                                         // Flag that is set when the last line is blank
+    int lastLineBlank = false;                                         // Flag that is set when the last line is blank
     
     // Loop through each string in the array and add a line number
     for (index = 0; index < numLines-1; index++) {
@@ -140,8 +140,8 @@ void addDollarSign(char *lines[], int numLines) {
 /*
  * Prints the lines in the line array
  */
-void printLines(char **lines, int numLines, bool squeeze) {
-    bool lastLineBlank = false;                                     // Flag for if the last line was blank
+void printLines(char **lines, int numLines, int squeeze) {
+    int lastLineBlank = false;                                     // Flag for if the last line was blank
     // if it was, then any blank line after
     // must not be printed
     for (int index = 0; index < numLines-1; index++) {
@@ -179,7 +179,7 @@ void printFile(int file, struct Arguments args) {
     char **lines = (char **)malloc(sizeof(char *) * fileLength);    // Array for all of the lines
     int workingIndex = 0;                                           // Counts the number of lines in the file
     int linesIndex = 0;                                             // Current place in the lines[] array
-    bool lastCharNewLine = false;                                   // Signifies if the last line was \n
+    int lastCharNewLine = false;                                   // Signifies if the last line was \n
     
     /* Loop through each line in the file and store them in an array */
     while (read(file, lineBuf, sizeof(char))) {
