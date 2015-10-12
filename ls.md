@@ -56,6 +56,7 @@ Prints out a list of the files in the current directory
       * To check if a user/group/other has permission, bitwise `and` the user/group/other's permission field with the corresponding bitfield for what you're checking
         * See [`checkPerm()`](#checkperm)
       * To add different permissions together, use bitwise `or` aka `|` in C
+      * These can be found [here](https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man2/chmod.2.html).
 * Other System Calls
   * [`creat()`](#creat) to create a file with defined permissions
   * [`chmod()`](#chmod) to modify permissions of a file
