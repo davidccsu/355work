@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     // no directory, run ls1 on the current directory
     if (argc == 2)
     {
-        do_ls(".", flags);
+        do_ls(argv[1], flags);
         return 1;
     }
     // Otherwise, run it with the path and flags
