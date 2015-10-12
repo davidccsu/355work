@@ -61,7 +61,12 @@ int main(int argc, char **argv) {
 
     // Now that the flags are set, if we have just a flag and 
     // no directory, run ls1 on the current directory
-    if (argc == 2)
+    if (argc == 2 && flags.all)
+    {
+        do_ls(".", flags);
+        return 1;
+    }
+    else if (argc == 2)
     {
         do_ls(argv[1], flags);
         return 1;
