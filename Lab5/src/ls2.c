@@ -11,14 +11,13 @@
 #include    <string.h>
 
 void do_ls(char []);
-struct winsize get_screen_dimensions();
+struct winsize *get_screen_dimensions();
 int compare(const void *str1, const void *str2);
 int get_longest_word(char **array, int arrlen);
 
 int main(int ac, char *av[])
 {
-    struct winsize win = get_screen_dimensions();
-    printf("Screen Width: %d", win.ws_col);
+    struct winsize *win = get_screen_dimensions();
     do_ls(".");
 //	if (ac == 1)
 //		do_ls(".");
@@ -53,34 +52,42 @@ void do_ls( char dirname[] )
 		closedir(dir_ptr);
 	}
     
-    struct winsize winset = get_screen_dimensions();
-    unsigned short scrnwdth = winset.ws_col;
-    qsort(dirArray, dirArrayLen, sizeof(char *), compare);
+    struct winsize *winset = get_screen_dimensions();
+    unsigned short scrnwdth = winset->ws_col;
+    int stringLen = sizeof(dirArray) / sizeof(char *);
+    qsort(dirArray, stringLen, sizeof(char *), compare);
     int longestwordlen = get_longest_word(dirArray, dirArrayLen);
 
     // Get the number of columns
-    int numcols = ceil(scrnwdth / (longestwordlen + 5));
+    int numcols = ceil(((double)scrnwdth / (longestwordlen + 5)));
     // Get the number of rows
-    int numrows = ceil(dirArrayLen / numcols);
-    
+    int numrows = ceil(((double)dirArrayLen / numcols));
     // Create 2D Array
     int dirIndex = 0;
     char *print_dirs[numcols][numrows];
 
+    for (int index = 0; index < dirArrayLen; index++)
+        printf("%s\n", dirArray[index]);
+    printf("\n\n");
     for (int col = 0; col < numcols; col++)
     {
         for (int row = 0; row < numrows; row++)
         {
+            printf("Row: %d\n  Col: %d\n  Val: %s\n", row, col, dirArray[dirIndex]);
             print_dirs[row][col] = dirArray[dirIndex];
             dirIndex++;
         }
+        printf("\n\n");
     }
-    for (int col = 0; col < numcols; col++)
-    {
-        for (int row = 0; row < numrows; row++)
+    
+    for (int row = 0; row < numrows; row++)
+    { 
+        for (int col = 0; col < numcols; col++)
         {
-            printf("Col: %d Row: %d Value: %s", col, row, print_dirs[row][col]);
+            printf("%s         ", print_dirs[row][col]);
+           // printf("Col: %d Row: %d Value: %s\n", col, row, print_dirs[row][col]);
         }
+        printf("\n");
     }
 }
 
@@ -112,13 +119,9 @@ int get_longest_word(char **array, int arrlen)
 /*
  * Creates a winsize struct with the screen dimensions
  */
-struct winsize get_screen_dimensions()
+struct winsize *get_screen_dimensions()
 {
-    struct winsize wbuf;
-
-    if (ioctl(0, TIOCGWINSZ, &wbuf) != -1)
-    {
-        return wbuf;
-    }
+    struct winsize *wbuf = (struct winsize *)malloc(sizeof(struct winsize));
+    ioctl(0, TIOCGWINSZ, wbuf);
     return wbuf;
 }
