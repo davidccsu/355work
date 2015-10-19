@@ -23,7 +23,7 @@ A filesystem is the methods and data structures that an operating system uses to
   * There are *heads* that read and write data to the disks
   * Organizing the data
     * **Tracks**
-    ![alt text](media/filesystem_disk.png)
+    ![alt text](../media/filesystem_disk.png)
       * Concentric circles around the disk
       * Each concentric circle is divided into *sectors*
       * Then each sector is represented on the sector by a *block*
@@ -37,7 +37,7 @@ A filesystem is the methods and data structures that an operating system uses to
           * Contains information about the file owner and group and file size
           * The remainder of the array is where the data is stored
       * Each inode contains the name and filesize for the file, it then has two arrays
-      ![alt text](media/filesystem_inode.png)
+      ![alt text](../media/filesystem_inode.png)
         * **Direct Blocks** - an array with links to blocks in the hard disk, there are 10 indices in this array, this goes up to 512 * 10 bytes so 5.12 kB, if the file is bigger than that, the indirect blocks are used
         * **Indirect Blocks** - an array with links to arrays of blocks (in three different indices)
           * 100 blocks (51.2 kB)
