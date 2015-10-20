@@ -1,0 +1,12 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+addspaces	ls2.c	/^void addspaces(char *str, int maxstrlen)$/;"	f
+compare	ls2.c	/^int compare(const void *str1, const void *str2)$/;"	f
+do_ls	ls2.c	/^void do_ls( char dirname[] )$/;"	f
+get_longest_word	ls2.c	/^int get_longest_word(char **array, int arrlen)$/;"	f
+get_screen_dimensions	ls2.c	/^struct winsize *get_screen_dimensions()$/;"	f
+main	ls2.c	/^int main(int ac, char *av[])$/;"	f

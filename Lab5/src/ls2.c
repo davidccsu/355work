@@ -14,19 +14,18 @@ void do_ls(char []);
 struct winsize *get_screen_dimensions();
 int compare(const void *str1, const void *str2);
 int get_longest_word(char **array, int arrlen);
+void addspaces(char *str, int maxstrlen);
+void setup_2d_array(int **arr, int numrows, int numcols);
 
 int main(int ac, char *av[])
 {
-    struct winsize *win = get_screen_dimensions();
-    do_ls(".");
-//	if (ac == 1)
-//		do_ls(".");
-//	else
-//		while (--ac)
-//        {
-//			printf("%s:\n", *++av);
-//			do_ls(*av);
-//		}
+	if (ac == 1)
+		do_ls(".");
+	else
+		while (--ac)
+        {
+			do_ls(*av);
+		}
 }
 
 /*
@@ -45,52 +44,101 @@ void do_ls( char dirname[] )
 	{
 		while ((direntp = readdir(dir_ptr)) != NULL)
         {
+            if (direntp->d_name[0] == '.')
+                continue;
             dirArray[dirArrayLen] = direntp->d_name; 
             dirArrayLen++;
 			//printf("%s\n", direntp->d_name);
         }
 		closedir(dir_ptr);
 	}
-    
+   
+    /* Get the size of the window */
     struct winsize *winset = get_screen_dimensions();
+    /* From the winset struct, get the width of the window in columns */
     unsigned short scrnwdth = winset->ws_col;
+    /* Get the size of each string */
     int stringLen = sizeof(dirArray) / sizeof(char *);
+    /* Sort the array using the qsort() library function */
     qsort(dirArray, stringLen, sizeof(char *), compare);
+    /* Find the longest word in the array (as this will be used as reference for printing */
     int longestwordlen = get_longest_word(dirArray, dirArrayLen);
 
-    // Get the number of columns
-    int numcols = ceil(((double)scrnwdth / (longestwordlen + 5)));
-    // Get the number of rows
+    /* Get the number of columns */
+    int numcols = floor(((double)scrnwdth / (longestwordlen + 1)));
+    /* Get the number of rows */
     int numrows = ceil(((double)dirArrayLen / numcols));
-    // Create 2D Array
-    int dirIndex = 0;
-    char *print_dirs[numcols][numrows];
+   
+    /* Create 2D Array */
+    /* This array will store the indices of each string */
+    int **print_dirs;
+    /* Allocate memory to the pointers */
+    print_dirs = (int **)malloc(numrows * sizeof(*print_dirs));
+    for (int index = 0; index < numrows; index++)
+        print_dirs[index] = (int *)malloc(numcols * sizeof(*print_dirs[index]));
+    /* Fill in their respective values */
+    setup_2d_array(print_dirs, numrows, numcols);
 
-    for (int index = 0; index < dirArrayLen; index++)
-        printf("%s\n", dirArray[index]);
-    printf("\n\n");
+    /* Loop through the matrix, printing each directory, correctly spaced and alphabetically */
+    for (int row = 0; row < numrows; row++)
+    {
+        for (int col = 0; col < numcols; col++)
+        {
+            /* If the index is out of bounds, do not print it */
+            if (print_dirs[row][col] > (dirArrayLen - 1))
+                continue;
+            else
+            {
+                addspaces(dirArray[print_dirs[row][col]], longestwordlen);
+                printf("%s", dirArray[print_dirs[row][col]]);
+            }
+        }
+        /* Print a new line to move to the next line */
+        printf("\n");
+    }
+    /* Free memory from leaks */
+
+    for (int index = 0; index < numrows; index++)
+        free(print_dirs[index]);
+    free(print_dirs);
+}
+
+/*
+ * Sets up the 2D array of indices
+ */
+void setup_2d_array(int **arr, int numrows, int numcols)
+{
+    /* When looping, this variable represents each index of dirArray */
+    int dirIndex = 0;
+    /* Loop through each row/col in the matrix, and add the indices */
     for (int col = 0; col < numcols; col++)
     {
         for (int row = 0; row < numrows; row++)
         {
-            printf("Row: %d\n  Col: %d\n  Val: %s\n", row, col, dirArray[dirIndex]);
-            print_dirs[row][col] = dirArray[dirIndex];
+            arr[row][col] = dirIndex;
             dirIndex++;
         }
-        printf("\n\n");
-    }
-    
-    for (int row = 0; row < numrows; row++)
-    { 
-        for (int col = 0; col < numcols; col++)
-        {
-            printf("%s         ", print_dirs[row][col]);
-           // printf("Col: %d Row: %d Value: %s\n", col, row, print_dirs[row][col]);
-        }
-        printf("\n");
     }
 }
 
+/*
+ * Adds a number of spaces to the end of a string to get it
+ * to a certain length
+ */
+void addspaces(char *str, int maxstrlen)
+{
+   /* Get the current string length */
+   size_t curr_strlen = strlen(str);
+
+   /* Get how many spaces would need to be added */
+   int numspcs = maxstrlen - curr_strlen;
+
+   /* Add the spaces */
+   for (int index = 0; index <= numspcs; index++)
+   {
+        strcat(str, " ");
+   }
+}
 /*
  * Compares the strings and returns their result using strcmp
  */
@@ -108,7 +156,7 @@ int get_longest_word(char **array, int arrlen)
     size_t longestlen = 0;
     for (int index = 0; index < arrlen; index++)
     {
-        // Get string length
+        /* Get string length */
         size_t currstrlen = strlen(array[index]);
         if (currstrlen > longestlen)
             longestlen = currstrlen;
