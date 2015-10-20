@@ -35,7 +35,7 @@ void do_ls( char dirname[] )
 {
 	DIR		*dir_ptr;		/* the directory */
 	struct  dirent	*direntp;		/* each entry	 */
-    char    **dirArray = (char **)malloc(sizeof(char) * 512);
+    char    **dirArray = (char **)malloc(sizeof(char *) * 512);
     int     dirArrayLen = 0;
     
 	if ((dir_ptr = opendir(dirname)) == NULL)
@@ -48,7 +48,6 @@ void do_ls( char dirname[] )
                 continue;
             dirArray[dirArrayLen] = direntp->d_name; 
             dirArrayLen++;
-			//printf("%s\n", direntp->d_name);
         }
 		closedir(dir_ptr);
 	}
@@ -101,6 +100,8 @@ void do_ls( char dirname[] )
     for (int index = 0; index < numrows; index++)
         free(print_dirs[index]);
     free(print_dirs);
+    free(dirArray);
+    free(winset);
 }
 
 /*
