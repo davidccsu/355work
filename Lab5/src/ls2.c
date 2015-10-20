@@ -24,7 +24,6 @@ int main(int ac, char *av[])
         while (--ac)
         {
             do_ls(*av);
-        
         }
     }
 }
