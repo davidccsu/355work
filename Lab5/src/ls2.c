@@ -35,7 +35,7 @@ int main(int ac, char *av[])
 void do_ls( char dirname[] )
 {
     DIR     *dir_ptr;		/* the directory */
-	struct  dirent	*direntp;		/* each entry	 */
+    struct  dirent	*direntp;		/* each entry	 */
     char    **dirArray = (char **)malloc(sizeof(char *) * 512);
     int     dirArrayLen = 0;
     
