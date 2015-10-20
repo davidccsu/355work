@@ -1,6 +1,4 @@
-/** ls1.c
- **   purpose  list contents of directory or directories
- **   action   if no args, use .  else list files in args
+/** ls2.c
  **/
 #include	<stdio.h>
 #include    <math.h>
