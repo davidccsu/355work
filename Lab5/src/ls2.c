@@ -1,9 +1,9 @@
 /** ls2.c
  **/
-#include	<stdio.h>
+#include    <stdio.h>
 #include    <math.h>
-#include	<sys/types.h>
-#include	<dirent.h>
+#include    <sys/types.h>
+#include    <dirent.h>
 #include    <stdlib.h>
 #include    <sys/ioctl.h>
 #include    <string.h>
@@ -17,13 +17,16 @@ void setup_2d_array(int **arr, int numrows, int numcols);
 
 int main(int ac, char *av[])
 {
-	if (ac == 1)
-		do_ls(".");
-	else
-		while (--ac)
+    if (ac == 1)
+        do_ls(".");
+    else
+    {
+        while (--ac)
         {
-			do_ls(*av);
-		}
+            do_ls(*av);
+        
+        }
+    }
 }
 
 /*
@@ -31,24 +34,24 @@ int main(int ac, char *av[])
  */
 void do_ls( char dirname[] )
 {
-	DIR		*dir_ptr;		/* the directory */
+    DIR     *dir_ptr;		/* the directory */
 	struct  dirent	*direntp;		/* each entry	 */
     char    **dirArray = (char **)malloc(sizeof(char *) * 512);
     int     dirArrayLen = 0;
     
 	if ((dir_ptr = opendir(dirname)) == NULL)
-		fprintf(stderr,"ls1: cannot open %s\n", dirname);
-	else
-	{
-		while ((direntp = readdir(dir_ptr)) != NULL)
+        fprintf(stderr,"ls1: cannot open %s\n", dirname);
+    else
+    {
+        while ((direntp = readdir(dir_ptr)) != NULL)
         {
             if (direntp->d_name[0] == '.')
                 continue;
             dirArray[dirArrayLen] = direntp->d_name; 
             dirArrayLen++;
         }
-		closedir(dir_ptr);
-	}
+        closedir(dir_ptr);
+    }
    
     /* Get the size of the window */
     struct winsize *winset = get_screen_dimensions();
