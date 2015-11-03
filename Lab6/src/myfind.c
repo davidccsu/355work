@@ -20,6 +20,7 @@ struct dirpath
     struct dirpath *next;
 };
 
+void find(char *, char *);
 void dostat(char *);
 void show_file_info(char *, struct stat *);
 void mode_to_letters(int, char[]);
@@ -28,30 +29,33 @@ char *gid_to_name(gid_t);
 
 int main(int argc, char **argv)
 {
+    find("/Users/skylerlehan", argv[1]);
+}
+
+/* finds a file in a directory */
+void find (char *filepath, char *name)
+{
     DIR *dir_ptr;
     struct dirent *direntp;
-    char *dirname = ".";
-    if ((dir_ptr = opendir(dirname)) == NULL)
-        fprintf(stderr, "cannot open %s\n", dirname);
+    
+    if ((dir_ptr = opendir(filepath)) == NULL)
+    {
+        fprintf(stderr, "Cannot open %s\n", filepath);
+        return;
+    }
     else
     {
-        /* Traverse the directories */
-        /* Get file stat */
+       /* Traverse directory */
         struct stat info;
         while ((direntp = readdir(dir_ptr)) != NULL)
         {
-            if (stat(direntp->d_name, &info) == -1)
-                perror(direntp->d_name);
-            else
+            if (stat(direntp->d_name, &info))
             {
-                if             
+                if (S_ISDIR(info.st_mode))
+                    find(direntp->d_name, name);
             }
+        }
     }
-
-
-
-
-
 }
 
 /* Gets info on a file */
