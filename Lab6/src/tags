@@ -1,0 +1,18 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+dir	myfind.c	/^    struct dirent dir;$/;"	m	struct:dirpath	typeref:struct:dirpath::dirent	file:
+dir_info	myfind.c	/^    struct stat dir_info;$/;"	m	struct:dirpath	typeref:struct:dirpath::stat	file:
+dirpath	myfind.c	/^struct dirpath$/;"	s	file:
+dostat	myfind.c	/^void dostat(char *filename)$/;"	f
+find	myfind.c	/^void find (char *filepath, char *name)$/;"	f
+gid_to_name	myfind.c	/^char *gid_to_name(gid_t gid)$/;"	f
+main	myfind.c	/^int main(int argc, char **argv)$/;"	f
+mode_to_letters	myfind.c	/^void mode_to_letters(int mode, char str[])$/;"	f
+next	myfind.c	/^    struct dirpath *next;$/;"	m	struct:dirpath	typeref:struct:dirpath::dirpath	file:
+prev	myfind.c	/^    struct dirpath *prev;$/;"	m	struct:dirpath	typeref:struct:dirpath::dirpath	file:
+show_file_info	myfind.c	/^void show_file_info(char *filename, struct stat *info_p)$/;"	f
+uid_to_name	myfind.c	/^char *uid_to_name(uid_t uid)$/;"	f

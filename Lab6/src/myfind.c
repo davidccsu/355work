@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -29,33 +30,51 @@ char *gid_to_name(gid_t);
 
 int main(int argc, char **argv)
 {
-    find("/Users/skylerlehan", argv[1]);
+    find(argv[2], argv[1]);
 }
 
 /* finds a file in a directory */
 void find (char *filepath, char *name)
 {
-    DIR *dir_ptr;
+    DIR *dir_ptr = (DIR *)malloc(sizeof(DIR *));
     struct dirent *direntp;
-    
-    if ((dir_ptr = opendir(filepath)) == NULL)
+
+    dir_ptr = opendir(filepath);
+    if (dir_ptr == NULL)
+        perror("Error opening directory");
+    /* Traverse directory */
+    struct stat *info = (struct stat *)malloc(sizeof(struct stat));
+    while ((direntp = readdir(dir_ptr)) != NULL)
     {
-        fprintf(stderr, "Cannot open %s\n", filepath);
-        return;
-    }
-    else
-    {
-       /* Traverse directory */
-        struct stat info;
-        while ((direntp = readdir(dir_ptr)) != NULL)
+        /* Exclude . and .. */
+        if (strcmp(direntp->d_name, ".") == 0 || strcmp(direntp->d_name, "..") == 0) 
+            continue;
+
+        char *newpath = (char *)malloc(sizeof(char *) * 512);
+        strcpy(newpath, filepath);
+        strcat(newpath, "/");
+        strcat(newpath, direntp->d_name);
+
+        if (stat(newpath, info) != -1)
         {
-            if (stat(direntp->d_name, &info))
+            if (S_ISDIR(info->st_mode))
             {
-                if (S_ISDIR(info.st_mode))
-                    find(direntp->d_name, name);
+                find(newpath, name);
+            }
+            else
+            {
+                if (strstr(direntp->d_name, name))
+                    printf("%s\n", newpath);
             }
         }
+        else
+        {
+            perror("Cannot stat directory");
+        }
+        //free(newpath);
     }
+    closedir(dir_ptr);
+    //free(dir_ptr);
 }
 
 /* Gets info on a file */
